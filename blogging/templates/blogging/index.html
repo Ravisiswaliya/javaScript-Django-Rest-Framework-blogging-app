@@ -1,0 +1,122 @@
+{% extends 'base.html' %} {% block content %}
+
+
+<div class="container">
+    {% if request.user.is_authenticated %}
+    <div class="">
+        <h4 class="text-center">Create A New Post</h4>
+        <form method="POST" id="myForm" class="form-inline">{% csrf_token %}
+            <input type="text" name="title" id="title" placeholder="Title" class="form-control mr-4" required>
+            <input type="text" name="discription" id="discription" placeholder="Discription" class="form-control mr-4" required="">
+            <input type="hidden" name="user" id='user' class="form-control" value="{{request.user.id}}">
+            <input type="file" name="image" id='image' placeholder="Upload Image" class="form-control mr-4">
+            <button type="submit" class="btn btn-info">Submit</button>
+        </form>
+    </div>
+
+    {% endif %}
+    <hr>
+    <h3 class="text-center">All posts</h3>
+    <div class="row" id="all-posts"></div>
+    <div id="post-detail"></div>
+
+</div>
+    
+</div>
+
+<script>
+    // script to post data
+    const myForm = document.getElementById('myForm');
+    myForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+
+        fetch("{% url 'blog-api:allpost' %}", {
+            method: 'POST',
+            body: formData,
+
+        }).then(function(response) {
+            return response.text()
+        }).then(function(text) {
+            alert(text);
+            window.location = "{% url 'blogging:home' %}";
+        }).catch(function(error) {
+            console.error(error);
+            console.log("somthing is wrong")
+        });
+    })
+
+    // retrive data
+    fetch("{% url 'blog-api:allpost' %}", {
+        method: 'GET',
+    }).then(function(resp) {
+        return resp.json();
+    }).then(function(d) {
+        let i;
+        let html = ''
+        for (i = 0; i < d.length; i++) {
+            let u = `/blog-api/post/${d[i]['id']}`;
+
+            html += `<div class="col-md-4">
+                        <div class ="card" id="single-post" onclick="post_detail(${d[i]['id']});">
+                            <h5>${d[i]["title"]}</h5>
+                            <small>${d[i]['created_at']}</small>
+                            <img src="${d[i]["image"]}" class="rounded" style="height:200px; width:330px;"/>
+                            <p>${d[i]['discription'].slice(0,30)}</p>
+                        
+                            <span class="badge badge-pill col-md-2 badge-danger" onclick="del_post(${d[i]['id']});">Delete</span>
+
+                        </div>
+                    </div>`
+        }
+        document.getElementById("all-posts").innerHTML = html
+    })
+
+    // delete record
+    function del_post(p_id) {
+        if (confirm("Are you sure?")) {
+                let u = `http://127.0.0.1:8000/blog-api/post/${p_id}`;
+                var xhr = new XMLHttpRequest();
+                xhr.open('DELETE', u, false);
+                xhr.send();
+                window.location.href = "/";
+            }
+                return false;   
+        }
+
+    // get detail single post
+    function post_detail(p_id) {
+        let u = `http://127.0.0.1:8000/blog-api/post/${p_id}`;
+        var p_detail = ""
+        fetch(u, {
+            method: "GET",
+        }).then(function(r) {
+            return r.json();
+        }).then(function(res) {
+            p_detail = `<div class="col-md-4">
+                            <h3>${res['title']}</h3>
+                            <small>${res['created_at']}</small>
+                            <img src="${res['image']}">
+                            <p>${res['discription']}</p>
+                        </div>`,
+            document.getElementById("post-detail").innerHTML =p_detail,
+            console.log(p_detail)
+        })
+    }
+</script>
+
+<style type="text/css">
+
+    #single-post{
+        background: ;
+        margin-bottom: 30px;
+        padding:10px;
+    }
+
+    #single-post:hover{
+            background: lightgray;
+    }
+
+</style>
+
+{% endblock %}

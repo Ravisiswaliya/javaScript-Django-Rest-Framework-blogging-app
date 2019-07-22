@@ -1,0 +1,7 @@
+db.sqlite3
+blogging/__pychache__
+blogging/migrations
+blogging/api/__pychache__
+blogging/api/migrations
+media
+
