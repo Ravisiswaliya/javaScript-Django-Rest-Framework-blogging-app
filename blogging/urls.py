@@ -4,5 +4,4 @@ from . import views
 app_name = 'blogging'
 urlpatterns = [
     path('', views.index, name='home'),
-    path('vueapp', views.vueApp, name='vueapp'),
 ]
